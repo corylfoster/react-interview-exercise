@@ -7,6 +7,7 @@ import {
   OrderedList,
   ListItem,
   ScaleFade,
+  Spinner,
   Checkbox,
   Input,
   HStack,
@@ -23,6 +24,7 @@ import {
 
 const googleMapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
+// Custom hook to deselect a school if it’s no longer in the filtered list
 const useDeselectIfFilteredOut = (
   selectedSchool: NCESSchoolFeatureAttributes | null,
   filteredSchools: NCESSchoolFeatureAttributes[],
@@ -40,111 +42,80 @@ const useDeselectIfFilteredOut = (
   }, [filteredSchools, selectedSchool, setSelectedSchool]);
 };
 
-const useDistrictSearch = (
-  query: string,
-  triggerSearch: boolean,
-  onDone: () => void,
-  setSearching: (val: boolean) => void
-) => {
+const Home: React.FC = () => {
+  const [districtQuery, setDistrictQuery] = useState("");
+  const [triggerDistrictSearch, setTriggerDistrictSearch] = useState(false);
+
+  const [schoolQuery, setSchoolQuery] = useState("");
+  const [triggerSchoolSearch, setTriggerSchoolSearch] = useState(false);
+
+  const [searching, setSearching] = useState(false);
+
+  const [districtSearchAttempted, setDistrictSearchAttempted] = useState(false);
+  const [schoolSearchAttempted, setSchoolSearchAttempted] = useState(false);
+
+  const [schools, setSchools] = useState<NCESSchoolFeatureAttributes[]>([]);
+  const [selectedSchool, setSelectedSchool] =
+    useState<NCESSchoolFeatureAttributes | null>(null);
+
   const [districts, setDistricts] = useState<NCESDistrictFeatureAttributes[]>(
     []
   );
-  const [attempted, setAttempted] = useState(false);
-
-  useEffect(() => {
-    const fetch = async () => {
-      if (!triggerSearch || query.trim() === "") return;
-
-      setSearching(true);
-      setAttempted(true);
-
-      try {
-        const results = await searchSchoolDistricts(query);
-        setDistricts(results);
-      } finally {
-        setSearching(false);
-        onDone();
-      }
-    };
-    fetch();
-  }, [triggerSearch, query]);
-
-  return { districts, attempted, setDistricts };
-};
-
-const useSchoolSearch = (
-  query: string,
-  districtId: string | undefined,
-  triggerSearch: boolean,
-  onDone: () => void,
-  setSearching: (val: boolean) => void
-) => {
-  const [schools, setSchools] = useState<NCESSchoolFeatureAttributes[]>([]);
-  const [attempted, setAttempted] = useState(false);
-
-  useEffect(() => {
-    const fetch = async () => {
-      if (!triggerSearch || query.trim() === "") return;
-
-      setSearching(true);
-      setAttempted(true);
-
-      try {
-        const results = await searchSchools(query, districtId);
-        setSchools(results);
-      } finally {
-        setSearching(false);
-        onDone();
-      }
-    };
-    fetch();
-  }, [triggerSearch, query, districtId]);
-
-  return { schools, attempted, setSchools };
-};
-
-const Home: React.FC = () => {
-  const [districtQuery, setDistrictQuery] = useState("");
-  const [schoolQuery, setSchoolQuery] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState<string>();
-  const [selectedSchool, setSelectedSchool] =
-    useState<NCESSchoolFeatureAttributes | null>(null);
-  const [searching, setSearching] = useState(false);
-  const [triggerDistrictSearch, setTriggerDistrictSearch] = useState(false);
-  const [triggerSchoolSearch, setTriggerSchoolSearch] = useState(false);
-
-  const { districts, attempted: districtSearchAttempted } = useDistrictSearch(
-    districtQuery,
-    triggerDistrictSearch,
-    () => {
-      setTriggerDistrictSearch(false);
-      setSelectedDistrict(undefined);
-      setSchools([]);
-      setSelectedSchool(null);
-    },
-    setSearching
+  const [selectedDistrict, setSelectedDistrict] = useState<string | undefined>(
+    undefined
   );
 
-  const {
-    schools,
-    attempted: schoolSearchAttempted,
-    setSchools,
-  } = useSchoolSearch(
-    schoolQuery,
-    selectedDistrict,
-    triggerSchoolSearch,
-    () => {
-      setTriggerSchoolSearch(false);
-      setSelectedSchool(null);
-    },
-    setSearching
-  );
-
+  // Derived filtered schools
   const filteredSchools = selectedDistrict
     ? schools.filter((s) => s.LEAID === selectedDistrict)
     : schools;
 
+  // Use the deselection hook
   useDeselectIfFilteredOut(selectedSchool, filteredSchools, setSelectedSchool);
+
+  // District search useEffect
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      if (!triggerDistrictSearch || districtQuery.trim() === "") return;
+
+      setSearching(true);
+      setDistrictSearchAttempted(true);
+
+      try {
+        const results = await searchSchoolDistricts(districtQuery);
+        setDistricts(results);
+        setSelectedDistrict(undefined);
+        setSchools([]); // clear previous school results
+        setSelectedSchool(null);
+      } finally {
+        setSearching(false);
+        setTriggerDistrictSearch(false);
+      }
+    };
+
+    fetchDistricts();
+  }, [triggerDistrictSearch, districtQuery]);
+
+  // School search useEffect
+  useEffect(() => {
+    const fetchSchools = async () => {
+      if (!triggerSchoolSearch || schoolQuery.trim() === "") return;
+
+      setSearching(true);
+      setSchoolSearchAttempted(true);
+
+      try {
+        const results = await searchSchools(schoolQuery, selectedDistrict);
+        setSchools(results);
+        setSelectedSchool(null);
+      } finally {
+        setSearching(false);
+        setTriggerSchoolSearch(false);
+      }
+    };
+
+    fetchSchools();
+  }, [triggerSchoolSearch, schoolQuery, selectedDistrict]);
 
   const selectedDistrictObj = districts.find(
     (d) => d.LEAID === selectedDistrict
