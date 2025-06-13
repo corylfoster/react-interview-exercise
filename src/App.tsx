@@ -1,5 +1,5 @@
 import Header from "@components/Header";
-import Home from "@components/Home";
+import Home from "@components/SchoolDataFinder/Home";
 
 function App() {
   return (
