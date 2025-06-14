@@ -1,17 +1,19 @@
 import React from "react";
 import { Heading, Text, Box, VStack } from "@chakra-ui/react";
 import { Card } from "@components/design/Card";
-import { googleMapsKey } from "@utils/maps"; // Import the key from /utils/maps
+import { googleMapsKey } from "@utils/maps"; // Import the Google Maps API key
 import {
   NCESDistrictFeatureAttributes,
   NCESSchoolFeatureAttributes,
 } from "@utils/nces";
 
+// Props interface for the SelectedDetailsCard component
 interface SelectedDetailsCardProps {
-  selectedDistrictObj: NCESDistrictFeatureAttributes | undefined;
-  selectedSchool: NCESSchoolFeatureAttributes | null;
+  selectedDistrictObj: NCESDistrictFeatureAttributes | undefined; // The currently selected district object
+  selectedSchool: NCESSchoolFeatureAttributes | null; // The currently selected school object
 }
 
+// Component for displaying details of the selected district or school
 const SelectedDetailsCard: React.FC<SelectedDetailsCardProps> = ({
   selectedDistrictObj,
   selectedSchool,
@@ -19,22 +21,24 @@ const SelectedDetailsCard: React.FC<SelectedDetailsCardProps> = ({
   return (
     <Card
       variant="rounded"
-      bg="brand.darkGreen"
-      borderColor="brand.darkGreen"
-      color="white"
+      bg="brand.darkGreen" // Background color for the card
+      borderColor="brand.darkGreen" // Border color for the card
+      color="white" // Text color
       flex="1"
       width="100%"
     >
-      <Heading size="md" mb={2}>
+      {/* Heading for the selected details card */}
+      <Heading size="md" mb={2} as="h2">
         Selected Details
       </Heading>
-
+      {/* Message displayed if no district or school is selected */}
       {!selectedDistrictObj && !selectedSchool ? (
         <Text fontStyle="italic">
           Please choose a district or a school to see results.
         </Text>
       ) : (
         <VStack align="start" spacing={6}>
+          {/* Display details of the selected district */}
           {selectedDistrictObj && (
             <Box>
               <Text fontWeight="bold">{selectedDistrictObj.NAME}</Text>
@@ -45,6 +49,7 @@ const SelectedDetailsCard: React.FC<SelectedDetailsCardProps> = ({
             </Box>
           )}
 
+          {/* Display details of the selected school */}
           {selectedSchool && (
             <Box>
               <Text fontWeight="bold">{selectedSchool.NAME}</Text>
@@ -52,6 +57,8 @@ const SelectedDetailsCard: React.FC<SelectedDetailsCardProps> = ({
                 {selectedSchool.STREET}, {selectedSchool.CITY},{" "}
                 {selectedSchool.STATE} {selectedSchool.ZIP}
               </Text>
+
+              {/* Embedded Google Maps iframe for the selected school */}
               <Box
                 as="iframe"
                 width="100%"
