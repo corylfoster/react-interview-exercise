@@ -44,17 +44,15 @@ const DistrictSearchCard: React.FC<DistrictSearchCardProps> = ({
       width="100%"
     >
       {/* Heading for the district search card */}
-      <Heading color="white" size="md" mb={2}>
+      <Heading color="white" size="md" mb={2} as="h2">
         Search for a District
       </Heading>
-
       {/* Input field for entering the district search query */}
       <Input
         placeholder="Enter district name"
         value={districtQuery}
         onChange={(e) => setDistrictQuery(e.target.value)}
       />
-
       {/* Button to trigger the district search */}
       <Button
         variant="redButton"
@@ -64,21 +62,18 @@ const DistrictSearchCard: React.FC<DistrictSearchCardProps> = ({
       >
         Search Districts
       </Button>
-
       {/* Message displayed if no districts are found after a search */}
       {districtSearchAttempted && !searching && districts.length === 0 && (
         <Text mt={4} color="red.500">
           No districts found matching your search.
         </Text>
       )}
-
       {/* Instructional message displayed if districts are found */}
       {districts.length > 0 && (
         <Text mt={4} fontStyle="italic" color="white">
           Please choose a district, then search for a school
         </Text>
       )}
-
       {/* List of districts returned from the search */}
       {districts.map((d) => (
         <Box
