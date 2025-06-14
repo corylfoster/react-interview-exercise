@@ -44,6 +44,7 @@ const DistrictSearchCard: React.FC<DistrictSearchCardProps> = ({
       width="100%"
     >
       {/* Heading for the district search card */}
+      {/* @ts-ignore */}
       <Heading color="white" size="md" mb={2} as="h2">
         Search for a District
       </Heading>
